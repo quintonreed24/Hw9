@@ -145,9 +145,9 @@
        (resolve (cadr parsed-no-code) env))
       ((eq? (car parsed-no-code) 'let-exp)
        (let* ((var-2-lists (env-let-mapper (cadr parsed-no-code)))
-              (env (extend-env (car var-2-lists) (cadr var-2-lists) env))
+              (new-env (extend-env (car var-2-lists) (cadr var-2-lists) env))
               (body (caddr parsed-no-code)))
-         (run-parsed-code body env))) 
+         (run-parsed-code body new-env))) 
       ((eq? (car parsed-no-code) 'math-exp)
        (do-mathy-stuff-toaster
         (cadr parsed-no-code)
@@ -166,6 +166,31 @@
          env))))))
 
 (define env '((age 21) (a 7) (b 5) (c 23)))
-(define sample-no-code '(call (function (a) (call (function (r) a) 10)) 7))
+(((r 5)) ((a 5)) ((a 7)))
+(define sample-no-code '(call (function (a) (call (function (r) a) a)) 5))
 (define parsed-no-code (no-parser sample-no-code))
 (run-parsed-code parsed-no-code env)
+
+(((a 5)) (global (a 7)))
+  
+int a = 7;
+func main() -> execute in env consisting of ((global (a 7)))
+{
+  f1(5);
+  print(a);
+}
+  
+func f1(a) -> execute in env consisting of (((a 5)) (global (a 7)))
+{
+  f2(a); -> execute in env consisting of only global ((global (a 7)))
+  print(a);
+}
+
+func f2(r) -> execute in env consisting of only global (((r 5)) (global (a 7)))
+{
+  print(a); //print a 5 by error
+  }
+   (define (global (a 7)))
+  (cond f2(a);)
+  
+  {
